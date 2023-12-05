@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-BOT_TOKEN = ''
+f = open("token.txt", "r")
+BOT_TOKEN = f.read()
 CHANNEL_ID = 1180127744567279727
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
