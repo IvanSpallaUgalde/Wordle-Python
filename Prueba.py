@@ -1,9 +1,13 @@
 word1 = "Arataki Itto"
-word2 = "Mondongoooooooooooooood"
-
-for i in range(len(word1)):
-    word2 = word2[:i] + word1[i]
-    print(word2)
+word2 = "Arataki Itto"
+i = 0
+while len(word1) != 0:
+    if word1[0] == word2[i]:
+        print(word1)
+        print(word2)
+        word1 = word1[:0] + word1[1:]
+    i += 1
+    print(word1)
 
 print("\n")
 print("\n")

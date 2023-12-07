@@ -14,6 +14,7 @@ def iniciarGame():
     index = random.randint(0, len(characters) - 1)       #Numero aleatorio para elejir el personaje
     letras = len(characters[index])                         #Longitud de la palabra
     personaje = characters[index].upper()                   #Personaje que hay que adivinar
+    letrasPool = characters[index].upper()                  #Variable para comprobar si una letra esta en la palabra y no se ha encontrado aun
     gess = ""                                               #String que contiene la respuesta del jugador
     vidas = 5                                               #Numero de intentos restantes
     print("Respuesta : "+personaje)
@@ -55,17 +56,18 @@ def iniciarGame():
         for i in range(k):
             if respuesta[i] == personaje[i]:
                 gess = gess[:i] + respuesta[i].upper() + gess[i+1:]
-            elif inWord(respuesta, personaje, i):
-                if gess[i] == "_":
-                    gess = gess[:i] + "?" + gess[i+1:]
+                personaje = personaje[:i] + "!" + personaje[i+1:]
+
+            elif (inWord(respuesta[i], letrasPool)):
+                gess = gess[:i] + "?" + gess[i+1:]
+
                 
         #Imprimer la palabra que has escrito y si es correcta termina la partida
         print(gess)
 
         gess = gess.replace("?","_")
 
-        if gess == personaje:
-            limpiarConsola()
+        if len(letrasPool) == 0:
             print("Has ganado  en " + str(6 - vidas) + " intentos")
             return
 
@@ -79,21 +81,12 @@ def iniciarGame():
             return
 
 
-def inWord(respuesta, palabra, iteraton):
-    i = iteraton
-    letra = respuesta[i]
+def inWord(letra, palabra):
 
-    k = len(palabra)
-    if len(respuesta) < len(palabra):
-        k = len(respuesta)
-
-    if letraDup(letra, palabra):
-        return
-    else:
-        for m in range(k):
-            if palabra[m] == letra:
-                return True
-        return False
+    for i in range(len(palabra)):
+        if letra == palabra[i]:
+            return True
+    return False
 
 def letraDup(letra, palabra):
     count = 0
@@ -105,6 +98,8 @@ def letraDup(letra, palabra):
         return True
 
     return False
+
+
 
 def limpiarConsola():
     sistema_operativo = os.name
