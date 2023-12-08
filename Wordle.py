@@ -1,104 +1,79 @@
-import random
 import os
+import random
 
 characters = ["Albedo", "Alhacen", "Aloy", "Arataki Itto", "Baizhu", "Cyno", "Dehya", "Diluc", "Eula", "Furina",
               "Ganyu", "Hu Tao", "Jean", "Kazuha", "Ayaka", "Ayato", "Keching", "Klee", "Lyney", "Mona", "Nahida",
-              "Neuvillette", "Nilou", "Qiqi", "Kokomi", "Shenhe", "Shogun Raiden", "Tartaglia", "Tignari", "Scaramouche",
+              "Neuvillette", "Nilou", "Qiqi", "Kokomi", "Shenhe", "Shogun Raiden", "Tartaglia", "Tignari",
+              "Scaramouche",
               "Venti", "Viajero", "Wriothesley", "Xiao", "Yae Miko", "Yelan", "Yoimiya", "Zhongli", "Amber", "Beidou",
               "Bennett", "Barbara", "Candace", "Charlotte", "Chongyun", "Collei", "Diona", "Dori", "Faruzan", "Fischl",
               "Freminet", "Gorou", "Kaeya", "Kaveh", "Kirara", "Kujou Sara", "Kuki Shinobu", "Laila", "Lisa", "Lynette",
               "Mika", "Ninguang", "Noelle", "Razor", "Rosaria", "Sacarosa", "Sayu", "Heizou", "Thoma", "Xiangling",
               "Xingchiu", "Xinyan", "Yanfei", "Yaoyao", "Yun Jin"]
 
+
 def iniciarGame():
-    index = random.randint(0, len(characters) - 1)       #Numero aleatorio para elejir el personaje
-    letras = len(characters[index])                         #Longitud de la palabra
-    personaje = characters[index].upper()                   #Personaje que hay que adivinar
-    letrasPool = characters[index].upper()                  #Variable para comprobar si una letra esta en la palabra y no se ha encontrado aun
-    gess = ""                                               #String que contiene la respuesta del jugador
-    vidas = 5                                               #Numero de intentos restantes
-    print("Respuesta : "+personaje)
-    '''
-    Preparacion del String respuesta del juego
-    "_" Quiere decir que no existe esta letra en la palabra final o aun no se ha indicado
-    "?" La letra indicada en esta posicion esta en la palabra final pero en una posicion diferente
-    "ABC..." Un caracter indica que se ha acertado el caracter en esa posicion
-    '''
-    #Crea un String de tamaño igual a la palabra final que solo contenga "_"
-    for i in range(letras):
-        gess = gess[:i] + "_" + gess[i+1:]
+    index = random.randint(0, len(characters) - 1)
+    finalWord = characters[index].upper()
+    letras = len(finalWord)
+    gess = ""
+    vidas = 5
+    print("Respuesta: " + finalWord)
 
     print(gess)
 
-    #Inicio del juego
     while True:
-        #Si las vidas son 0 se termina la partida
-        if vidas == 0:
-            return
 
-        #Obtiene por consola la respuesta
+        personaje = finalWord
+        letrasPool = finalWord
+
+        for i in range(letras):
+            gess = gess[:i] + "_" + gess[i + 1:]
+
         respuesta = input().upper()
 
-        #Comando auxiliar para volver al menu
         if respuesta == "QUIT()":
             limpiarConsola()
             return
 
-        #Elimina el salto de linea del final de la entrada
-        respuesta = respuesta.replace("\n","")
+        respuesta = respuesta.replace("\n", "")
 
-        #Revisa que String es mas corto para hacer las iteraciones en funcion de este
         k = len(personaje)
         if len(respuesta) < len(personaje):
             k = len(respuesta)
 
-        #Comprueba si las letras de la palabra introducida esta en la palabra final, en tal caso lo sustituye por el caracter que corresponda
         for i in range(k):
             if respuesta[i] == personaje[i]:
-                gess = gess[:i] + respuesta[i].upper() + gess[i+1:]
-                personaje = personaje[:i] + "!" + personaje[i+1:]
+                gess = gess[:i] + respuesta[i] + gess[i+1:]
+                letrasPool = eliminarLetra(respuesta[i], letrasPool)
 
-            elif (inWord(respuesta[i], letrasPool)):
-                gess = gess[:i] + "?" + gess[i+1:]
+        for i in range(k):
+            if gess[i] == "_":
+                if inWord(respuesta[i], letrasPool):
+                    gess = gess[:i] + "?" + gess[i + 1:]
 
-                
-        #Imprimer la palabra que has escrito y si es correcta termina la partida
         print(gess)
 
-        gess = gess.replace("?","_")
-
-        if len(letrasPool) == 0:
-            print("Has ganado  en " + str(6 - vidas) + " intentos")
+        if gess == finalWord:
+            print(f"Has ganado en {6 - vidas} intentos")
             return
 
-        #En caso de no estar correcta la palabra resta 1 intento y continua
         vidas -= 1
         print(f"Intentos restantes {vidas}")
 
-        #Si no quedan mas intentos termina la partida
-        if vidas == 0:
-            print("Has perdido, no te quedan intentos")
-            return
-
 
 def inWord(letra, palabra):
-
     for i in range(len(palabra)):
         if letra == palabra[i]:
             return True
     return False
 
-def letraDup(letra, palabra):
-    count = 0
-    for i in range(len(palabra)):
-        if letra == palabra[i]:
-            count += 1
 
-    if count > 1:
-        return True
-
-    return False
-
+def eliminarLetra(letra, word):
+    for i in range(len(word)):
+        if word[i] == letra:
+            word = word[:i] + word[i + 1:]
+            return word
 
 
 def limpiarConsola():
@@ -122,11 +97,11 @@ def displayMenu():
             limpiarConsola()
             print("Opcion no valida, vuelva a ingresar su opcion")
 
+
 def main():
     limpiarConsola()
     displayMenu()
     print("Fin, Bye Bye")
-
 
 
 if __name__ == "__main__":

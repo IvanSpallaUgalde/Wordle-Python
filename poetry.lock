@@ -338,6 +338,16 @@ files = [
 ]
 
 [[package]]
+name = "ramdom"
+version = "1.0"
+description = "none"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ramdom-1.0.tar.gz", hash = "sha256:47385bb2d78ad679c53563d64139db522642dc9ac8aea9ecd7e201072dd7c3bd"},
+]
+
+[[package]]
 name = "yarl"
 version = "1.9.3"
 description = "Yet another URL library"
@@ -443,4 +453,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c4f261ba90233835b97f856828ad441a0800af7f03a43fa033ac17f3be8ba514"
+content-hash = "6b6c04417cd32d02f3ce1a179b451c00491936fdd1fcd3469d1626c9c14d98a4"
