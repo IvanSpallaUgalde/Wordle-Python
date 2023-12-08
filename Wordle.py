@@ -52,11 +52,16 @@ def iniciarGame():
                 if inWord(respuesta[i], letrasPool):
                     gess = gess[:i] + "?" + gess[i + 1:]
 
-        print(gess)
-
-        if gess == finalWord:
+        if (gess == finalWord) and (len(finalWord) == len (respuesta)):
+            print(gess)
             print(f"Has ganado en {6 - vidas} intentos")
             return
+        elif (gess == finalWord) and (len(finalWord) != len(respuesta)):
+            print("Dentro de la palabra que has escrito esta la respuesta correcta")
+        else:
+            print(gess)
+            print("Respuesta incorrecta")
+
 
         vidas -= 1
         print(f"Intentos restantes {vidas}")
