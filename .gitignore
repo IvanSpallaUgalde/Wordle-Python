@@ -126,3 +126,6 @@ fabric.properties
 *.wps
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,text
+/.idea/misc.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
