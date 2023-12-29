@@ -9,10 +9,12 @@ CHANNEL_ID = 1180127744567279727
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
+games_list = []
+
 help_msg = ("Para jugar conmigo tendras a tu disposicion los siguientes comandos: \n!help -> Muestra los comandos disponibles del bot \n!play -> Inicia una partida"
             "\n!endgame -> Termina una partida forzosamente \n!vidas -> Te muestra tus intentos restantes \n!guia -> Muestra una guia de como jugar al juego"
             "\n!answer -> Comando utilizado para dar una respuesta")
-GAME_INSTANCE = None
+
 @bot.event
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
@@ -39,7 +41,7 @@ async def ayuda(ctx):
 async def initGame(ctx):
     global GAME_INSTANCE
     GAME_INSTANCE = WordleGame()
-    await ctx.send(f"Juego iniciado con {GAME_INSTANCE.get_vidas()} vidas y el personaje: {GAME_INSTANCE.get_personaje()}")
+    await ctx.send(f"Juego iniciado con  vidas")
 
 @bot.command()
 async def personaje(ctx):
