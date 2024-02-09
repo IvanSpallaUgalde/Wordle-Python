@@ -25,6 +25,9 @@ class WordleGame:
     def get_personaje(self):
         return self.personaje
 
+    def get_gess(self):
+        return self.respFinal
+
     def gess(self, word: str):
 
         for i in range(len(self.respFinal)):
@@ -56,14 +59,8 @@ class WordleGame:
         for i in range(len(word)):
             if word[i] == c:
                 word = word[:i] + word[i+1:]
+                return word
         return word
 
     def restar_vida(self):
         self.vidas -= 1
-
-    def reaper(self):
-        del characters
-        del self.respFinal
-        del self.letrasPool
-        del self.vidas
-        del self.personaje

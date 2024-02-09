@@ -1,7 +1,22 @@
 import discord
 from discord.ext import commands
+from BotGame import BotGame
 
-from WordleGame import WordleGame
+'''
+------------------------------------------Function definition zone------------------------------------------------------
+'''
+def check_user(id: int):
+    global games_list
+    for i in range(len(games_list)):
+        if games_list[i].get_user_id() == id:
+            return i
+    return -1
+
+def remove_all_extra_spaces(string: str):
+    return " ".join(string.split())
+'''
+---------------------------------------End of Function definiton zone---------------------------------------------------
+'''
 
 f = open("token.txt", "r")
 BOT_TOKEN = f.read()
@@ -11,8 +26,9 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 games_list = []
 
-help_msg = ("Para jugar conmigo tendras a tu disposicion los siguientes comandos: \n!help -> Muestra los comandos disponibles del bot \n!play -> Inicia una partida"
-            "\n!endgame -> Termina una partida forzosamente \n!vidas -> Te muestra tus intentos restantes \n!guia -> Muestra una guia de como jugar al juego"
+help_msg = ("Para jugar conmigo tendras a tu disposicion los siguientes comandos: \n!help -> Muestra los comandos "
+            "disponibles del bot \n!play -> Inicia una partida \n!endgame -> Termina una partida forzosamente "
+            "\n!vidas -> Te muestra tus intentos restantes \n!guia -> Muestra una guia de como jugar al juego "
             "\n!answer -> Comando utilizado para dar una respuesta")
 
 @bot.event
@@ -22,11 +38,15 @@ async def on_ready():
     '''
     await channel.send(help_msg)
     await channel.send(":warning: Es importante saber lo siguiente antes de jugar :warning:")
-    await channel.send("***Como los personajes de Genshin Impact tienen nombres de diferentes longitudes, la cantidad de cuadrados que salen corresponde al numero de letras del personaje que hay que adivinar***")
+    await channel.send("***Como los personajes de Genshin Impact tienen nombres de diferentes longitudes, la cantidad de 
+    cuadrados que salen corresponde al numero de letras del personaje que hay que adivinar***")
 
-    await channel.send(":green_square: :point_left: Este cuadrado verde representa que la letra en esta posicion de tu respuesta es correcta")
-    await channel.send(":orange_square: :point_left: Este cuadrado naranja representa que la letra en esta posicion de tu respuesta esta en la respuesta correcta pero en una posicion diferente")
-    await channel.send(":white_large_square: :point_left: Este cuadrado blanco representa que la letra en esta posicion de tu respuesta es no esta en la respuesta correcta, o que en esta posicion no has puesto ninguna letra")
+    await channel.send(":green_square: :point_left: Este cuadrado verde representa que la letra en esta posicion de tu 
+    respuesta es correcta")
+    await channel.send(":orange_square: :point_left: Este cuadrado naranja representa que la letra en esta posicion de 
+    tu respuesta esta en la respuesta correcta pero en una posicion diferente")
+    await channel.send(":white_large_square: :point_left: Este cuadrado blanco representa que la letra en esta posicion 
+    de tu respuesta es no esta en la respuesta correcta, o que en esta posicion no has puesto ninguna letra")
     '''
 
 @bot.command()
@@ -38,26 +58,85 @@ async def ayuda(ctx):
     await ctx.send(help_msg)
 
 @bot.command()
-async def initGame(ctx):
-    global GAME_INSTANCE
-    GAME_INSTANCE = WordleGame()
-    await ctx.send(f"Juego iniciado con  vidas")
+async def init_game(ctx):
+    global games_list
+    aux = BotGame(ctx.author.id)
+    games_list.append(aux)
+    vidas = aux.get_vidas()
+    await ctx.send(f"Juego de <@{aux.get_user_id()}> iniciado con {vidas} vidas")
 
 @bot.command()
 async def personaje(ctx):
-    global GAME_INSTANCE
-    if GAME_INSTANCE == None:
-        await ctx.send("No existe una partida")
+    global games_list
+    i = check_user(ctx.author.id)
+    if i < 0:
+        await ctx.send("Not in game")
     else:
-        await ctx.send(f"El pesonaje de esta partida es: {GAME_INSTANCE.get_personaje()}")
+        personaje = games_list[i].get_personaje()
+        await ctx.send(f"Tu personaje es: {personaje}")
 
 @bot.command()
 async def vidas(ctx):
-    global GAME_INSTANCE
-    if GAME_INSTANCE == None:
-        await ctx.send("No existe una partida")
+    global games_list
+    i = check_user(ctx.author.id)
+    if i < 0:
+        await ctx.send("Not in game")
     else:
-        await ctx.send(f"Te quedan {str(GAME_INSTANCE.get_vidas)} vidas")
+        vidas = games_list[i].get_vidas()
+        await ctx.send(f"Te quedan {vidas} vidas")
 
+@bot.command()
+async def my_id(cntx):
+    await cntx.send(f"El id del usuario <@{cntx.author.id}> es: {cntx.author.id}")
+
+@bot.command(pass_context=True)
+async def gess(cntx, *args):
+    global games_list
+    message_text = ""
+    i = check_user(cntx.author.id)
+    if i >= 0:
+        aux = games_list[i]
+        for j in range(len(args)):
+            message_text = message_text + args[i] + " "
+        message_text = remove_all_extra_spaces(message_text)
+        respuesta = aux.gess(message_text)
+        respuesta_message = ""
+        for m in range(len(respuesta)):
+            if respuesta[m] == "_":
+                respuesta_message = respuesta_message + ":white_large_square:"
+            elif respuesta[m] == "?":
+                respuesta_message = respuesta_message + ":orange_square:"
+            elif respuesta[m] == " ":
+                respuesta_message = respuesta_message + " "
+            else:
+                respuesta_message = respuesta_message + ":green_square:"
+        await cntx.send(respuesta_message)
+    else:
+        await cntx.send("Not in game")
+
+@bot.command(pass_context=True)
+async def test(cntx, *args):
+    message_text = ""
+    for i in range(len(args)):
+        message_text = message_text + args[i] + " "
+
+    message_text[-1] = ""
+    await cntx.send(message_text)
+
+@bot.command()
+async def players(ctx):
+    if len(games_list) == 0:
+        await ctx.send("0 Players")
+    for i in range(len(games_list)):
+        await ctx.send(f"<@{games_list[i].get_user_id()}> esta jugando")
+
+@bot.command()
+async def end_game(ctx):
+    global games_list
+    i = check_user(ctx.author.id)
+    if i < 0:
+        await ctx.send("Not in game")
+    else:
+        del games_list[i]
 
 bot.run(BOT_TOKEN)
