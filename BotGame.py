@@ -1,4 +1,4 @@
-from WordleGame import WordleGame
+from Wordle_game import WordleGame
 
 
 class BotGame:
@@ -7,8 +7,8 @@ class BotGame:
         self.user_id = id
         self.WordleGame = WordleGame()
 
-    def get_vidas(self):
-        return self.WordleGame.get_vidas()
+    def get_attempts(self):
+        return self.WordleGame.get_attempts()
 
     def get_user_id(self):
         return self.user_id
@@ -20,5 +20,5 @@ class BotGame:
         return self.WordleGame.get_personaje()
 
     def is_finished(self):
-        return self.WordleGame.get_gess() == self.WordleGame.get_personaje()
+        return self.WordleGame.get_resp() == self.WordleGame.get_personaje()
 

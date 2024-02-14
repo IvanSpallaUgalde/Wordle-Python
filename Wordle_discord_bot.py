@@ -14,13 +14,16 @@ def check_user(id: int):
 
 def remove_all_extra_spaces(string: str):
     return " ".join(string.split())
+
+def finish_game(i: int):
+    del games_list[i]
 '''
 ---------------------------------------End of Function definiton zone---------------------------------------------------
 '''
 
 f = open("token.txt", "r")
 BOT_TOKEN = f.read()
-CHANNEL_ID = 1180127744567279727
+CHANNEL_ID = 1206981689356714024
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
@@ -60,10 +63,13 @@ async def ayuda(ctx):
 @bot.command()
 async def init_game(ctx):
     global games_list
-    aux = BotGame(ctx.author.id)
-    games_list.append(aux)
-    vidas = aux.get_vidas()
-    await ctx.send(f"Juego de <@{aux.get_user_id()}> iniciado con {vidas} vidas")
+    i = check_user(ctx.author.id)
+    if i < 0:
+        aux = BotGame(ctx.author.id)
+        games_list.append(aux)
+        await ctx.send(f"Juego de <@{aux.get_user_id()}> iniciado")
+    else:
+        await ctx.send(f"<@{ctx.author.id}> ya estas en partida")
 
 @bot.command()
 async def personaje(ctx):
@@ -82,7 +88,7 @@ async def vidas(ctx):
     if i < 0:
         await ctx.send("Not in game")
     else:
-        vidas = games_list[i].get_vidas()
+        vidas = games_list[i].get_attempts()
         await ctx.send(f"Te quedan {vidas} vidas")
 
 @bot.command()
@@ -90,27 +96,41 @@ async def my_id(cntx):
     await cntx.send(f"El id del usuario <@{cntx.author.id}> es: {cntx.author.id}")
 
 @bot.command(pass_context=True)
-async def gess(cntx, *args):
+async def p(cntx, *args):
     global games_list
     message_text = ""
     i = check_user(cntx.author.id)
     if i >= 0:
         aux = games_list[i]
         for j in range(len(args)):
-            message_text = message_text + args[i] + " "
-        message_text = remove_all_extra_spaces(message_text)
+            if j == 0:
+                message_text = args[j]
+            else:
+                message_text = f"{message_text} {args[j]}"
+        await cntx.send(message_text)
         respuesta = aux.gess(message_text)
+        await cntx.send(respuesta)
+        await cntx.send(len(args))
         respuesta_message = ""
         for m in range(len(respuesta)):
-            if respuesta[m] == "_":
+            if respuesta[m] == "-":
                 respuesta_message = respuesta_message + ":white_large_square:"
             elif respuesta[m] == "?":
                 respuesta_message = respuesta_message + ":orange_square:"
-            elif respuesta[m] == " ":
+            elif respuesta[m] == "_":
                 respuesta_message = respuesta_message + " "
             else:
                 respuesta_message = respuesta_message + ":green_square:"
-        await cntx.send(respuesta_message)
+
+
+        text = (f"<@{cntx.author.id}>\nIntento: {aux.get_attempts()}\n")
+
+        if aux.is_finished():
+            del games_list[i]
+            await cntx.send(f"{text}{respuesta_message}\nCORRECTO! Juego finalizado")
+        else:
+            await cntx.send(text+respuesta_message)
+
     else:
         await cntx.send("Not in game")
 
@@ -138,5 +158,13 @@ async def end_game(ctx):
         await ctx.send("Not in game")
     else:
         del games_list[i]
+
+@bot.command(pass_context=True)
+async def args_test(cntx, *args):
+    await cntx.send(len(args))
+    mensaje = ""
+    for i in range(len(args)):
+        mensaje =f"{mensaje} args[{i}]: {args[i]} \n"
+    await cntx.send(mensaje)
 
 bot.run(BOT_TOKEN)
