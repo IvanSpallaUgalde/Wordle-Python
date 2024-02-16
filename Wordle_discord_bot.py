@@ -29,15 +29,14 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 games_list = []
 
-help_msg = ("Para jugar conmigo tendras a tu disposicion los siguientes comandos: \n!help -> Muestra los comandos "
-            "disponibles del bot \n!play -> Inicia una partida \n!endgame -> Termina una partida forzosamente "
-            "\n!vidas -> Te muestra tus intentos restantes \n!guia -> Muestra una guia de como jugar al juego "
-            "\n!answer -> Comando utilizado para dar una respuesta")
-
+help_msg = ("Comandos:\n!ayuda: informacion de los comandos disponibles\n!play: inicia una nueva partida, en caso de "
+            "estar en una partida no hace nada\n!intentos: te dice cuantos intentos llevas\n!p: Si estas en partida "
+            "este es el comando para hacer un itento\n!end: Sirve para terminar la partida prematuramente")
 @bot.event
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
-    await channel.send("Hola! Soy un bot preparado para jugar al ahoracado con personajes de Genshin impcat!")
+    await channel.send(f"Hola! Soy un bot preparado para jugar al ahoracado con personajes de Genshin impcat!\n"
+                       f"{help_msg}\n ")
     '''
     await channel.send(help_msg)
     await channel.send(":warning: Es importante saber lo siguiente antes de jugar :warning:")
@@ -53,26 +52,29 @@ async def on_ready():
     '''
 
 @bot.command()
-async def hello(ctx):
-    await ctx.send("Hello!")
-
-@bot.command()
 async def ayuda(ctx):
     await ctx.send(help_msg)
 
 @bot.command()
-async def init_game(ctx):
+async def play(ctx):
     global games_list
     i = check_user(ctx.author.id)
     if i < 0:
         aux = BotGame(ctx.author.id)
         games_list.append(aux)
-        await ctx.send(f"Juego de <@{aux.get_user_id()}> iniciado")
+        string1 = aux.get_resp_fin()
+        string2 = ""
+        for i in range(len(string1)):
+            if string1[i] != " ":
+                string2 += ":white_large_square:"
+            else:
+                string2 += "   "
+        await ctx.send(f"Juego de <@{aux.get_user_id()}> iniciado\n{string1}\n{string2}")
     else:
         await ctx.send(f"<@{ctx.author.id}> ya estas en partida")
 
 @bot.command()
-async def personaje(ctx):
+async def pj(ctx):
     global games_list
     i = check_user(ctx.author.id)
     if i < 0:
@@ -82,14 +84,14 @@ async def personaje(ctx):
         await ctx.send(f"Tu personaje es: {personaje}")
 
 @bot.command()
-async def vidas(ctx):
+async def intentos(ctx):
     global games_list
     i = check_user(ctx.author.id)
     if i < 0:
-        await ctx.send("Not in game")
+        await ctx.send(f"<@{ctx.author.id}> Not in game")
     else:
         vidas = games_list[i].get_attempts()
-        await ctx.send(f"Te quedan {vidas} vidas")
+        await ctx.send(f"<@{ctx.author.id}> has hecho {vidas} intentos")
 
 @bot.command()
 async def my_id(cntx):
@@ -99,72 +101,62 @@ async def my_id(cntx):
 async def p(cntx, *args):
     global games_list
     message_text = ""
-    i = check_user(cntx.author.id)
-    if i >= 0:
-        aux = games_list[i]
+    icon_message = ""
+    index = check_user(cntx.author.id)
+    if index >= 0:
+        aux = games_list[index]
         for j in range(len(args)):
             if j == 0:
                 message_text = args[j]
             else:
                 message_text = f"{message_text} {args[j]}"
-        await cntx.send(message_text)
-        respuesta = aux.gess(message_text)
-        await cntx.send(respuesta)
-        await cntx.send(len(args))
+        #await cntx.send(message_text)
         respuesta_message = ""
-        for m in range(len(respuesta)):
-            if respuesta[m] == "-":
-                respuesta_message = respuesta_message + ":white_large_square:"
-            elif respuesta[m] == "?":
-                respuesta_message = respuesta_message + ":orange_square:"
-            elif respuesta[m] == "_":
-                respuesta_message = respuesta_message + " "
-            else:
-                respuesta_message = respuesta_message + ":green_square:"
+        if not aux.check_word(message_text):
+            await cntx.send(f"{message_text} --> La posicion de los caracteres y espacios debe coincidir con la de "
+                            f"los caracteres de la palabra {aux.get_resp_fin()}")
+        else:
+            respuesta_message = aux.gess(message_text)
 
+            for i in range(len(respuesta_message)):
+                if respuesta_message[i] == "-":
+                    icon_message += ":white_large_square:"
+                elif respuesta_message[i] == "?":
+                    icon_message += ":orange_square:"
+                elif respuesta_message[i] == " ":
+                    icon_message += " "
+                else:
+                    icon_message += ":green_square:"
+
+            #await cntx.send(respuesta_message)
 
         text = (f"<@{cntx.author.id}>\nIntento: {aux.get_attempts()}\n")
 
-        if aux.is_finished():
-            del games_list[i]
-            await cntx.send(f"{text}{respuesta_message}\nCORRECTO! Juego finalizado")
+        if aux.is_finished(message_text):
+            await cntx.send(f"{text}{respuesta_message}\n{icon_message}\nCORRECTO! Juego finalizado")
+            del games_list[index]
         else:
-            await cntx.send(text+respuesta_message)
-
+            await cntx.send(text+respuesta_message+"\n"+icon_message)
     else:
         await cntx.send("Not in game")
 
-@bot.command(pass_context=True)
-async def test(cntx, *args):
-    message_text = ""
-    for i in range(len(args)):
-        message_text = message_text + args[i] + " "
-
-    message_text[-1] = ""
-    await cntx.send(message_text)
-
+'''
 @bot.command()
 async def players(ctx):
     if len(games_list) == 0:
         await ctx.send("0 Players")
     for i in range(len(games_list)):
         await ctx.send(f"<@{games_list[i].get_user_id()}> esta jugando")
-
+'''
 @bot.command()
-async def end_game(ctx):
+async def end(ctx):
     global games_list
     i = check_user(ctx.author.id)
     if i < 0:
         await ctx.send("Not in game")
     else:
-        del games_list[i]
 
-@bot.command(pass_context=True)
-async def args_test(cntx, *args):
-    await cntx.send(len(args))
-    mensaje = ""
-    for i in range(len(args)):
-        mensaje =f"{mensaje} args[{i}]: {args[i]} \n"
-    await cntx.send(mensaje)
+        await ctx.send(f"<@{games_list[i].get_user_id()}>\nBuen intento, tu personaje era: {games_list[i].get_personaje()}")
+        del games_list[i]
 
 bot.run(BOT_TOKEN)
