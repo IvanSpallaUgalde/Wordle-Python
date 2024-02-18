@@ -156,8 +156,8 @@ async def p(cntx, *args):
         # await cntx.send(message_text)
         respuesta_message = ""
         if not aux.check_word(message_text):
-            await cntx.send(f"{message_text} --> La posicion de los caracteres y espacios debe coincidir con la de "
-                            f"los caracteres de la palabra {aux.get_resp_fin()}")
+            text = (f"<@{cntx.author.id}>\n{message_text}\nLa posicion de las letras y espacios debe coincidir con la de "
+                    f"la palabra {aux.get_resp_fin()}")
         else:
             respuesta_message = aux.gess(message_text)
 
@@ -170,10 +170,9 @@ async def p(cntx, *args):
                     icon_message += " "
                 else:
                     icon_message += ":green_square:"
+            text = (f"<@{cntx.author.id}>\nIntento: {aux.get_attempts()}\n")
 
-            # await cntx.send(respuesta_message)
 
-        text = (f"<@{cntx.author.id}>\nIntento: {aux.get_attempts()}\n")
 
         if aux.is_finished(message_text):
             await cntx.send(f"{text}{respuesta_message}\n{icon_message}\nCORRECTO! Has ganado!")
